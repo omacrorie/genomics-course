@@ -1,0 +1,35 @@
+---
+title: "Lab2"
+author: "Olivia Macrorie"
+output: html_document
+bibliography: data/references.bibtex
+---
+
+Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
+
+
+#Exercise 1
+```{r}
+x <- 3
+y <- 15
+x + y
+x - y
+x * y
+x / y
+```
+
+#Exercise 2
+```{r}
+ x <- 2
+y <- 3
+x^5 > y^4
+```
+
+#Exercise 3  
+```{r}
+ a <- c(22,62,148,43,29)
+b <- sum (a)
+a / b
+```
+
+#REFERENCES
