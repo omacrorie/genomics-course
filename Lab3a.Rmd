@@ -1,0 +1,122 @@
+---
+title: "Lab 3A"
+output: html_document
+---
+```{r, warning=FALSE}
+library(tidyverse)
+```
+
+```{r eval = FALSE}
+download.file(url = "https://ndownloader.figshare.com/files/2292169",
+              destfile = "data/portal_data_joined.csv")
+```
+```{r, results = FALSE, warning=FALSE}
+surveys <- read.csv("data/portal_data_joined.csv")
+surveys
+head(surveys)
+View(surveys)
+str(surveys)
+dim(surveys)
+nrow(surveys)
+ncol(surveys)
+head(surveys)
+tail(surveys)
+names(surveys)
+summary(surveys)
+```
+#Challnge Set 1
+#Challenge Question: data frame
+#Challenge Question: 13 columns and 34786 rows
+#Challenge Question: 48
+
+#Challenge Set 2 
+```{r, results = FALSE, warning=FALSE}
+surveys_200 <- surveys[200, ]
+nrows <- nrow(surveys)
+tail(surveys)
+surveys_last <- surveys[nrows, ]
+n_rows <- nrow(surveys)
+surveys_middle <- surveys[n_rows / 2, ]
+surveys_middle
+surveys_head <- surveys[-(7:n_rows), ]
+surveys_head
+```
+
+#Factors
+```{r, results = FALSE, warning=FALSE}
+sex <- factor(c("male", "female", "female", "male"))
+levels(sex)
+nlevels(sex)
+sex <- factor(sex, levels = c("male", "female"))
+as.character(sex)
+sex <- factor(surveys$sex)
+head(sex)
+levels(sex)
+levels(sex)[1] <- "undetermined"
+levels(sex)
+head(sex)
+sex <- factor(surveys$sex)
+levels(sex)
+levels(sex)[1] <- "undetermined"
+```
+
+#Challenge Set 3
+```{r, results = FALSE, warning=FALSE}
+levels(sex)[2:3] <- c("female" , "male")
+sex <- factor(sex, levels = c("female", "male", "undetermined"))
+plot(sex)
+```
+
+#Using stringsAsFactors = FALSE
+```{r, results = FALSE, warning=FALSE}
+surveys <- read.csv("data/portal_data_joined.csv", stringsAsFactors = TRUE)
+str(surveys)
+```
+
+```{r, results = FALSE, warning=FALSE}
+surveys <- read.csv("data/portal_data_joined.csv", stringsAsFactors = FALSE)
+str(surveys)
+```
+```{r, results = FALSE, warning=FALSE}
+surveys$plot_type <- factor(surveys$plot_type)
+str(surveys)
+```
+
+#Challenge Set 4
+```{r, results = FALSE, warning=FALSE}
+animal_data <- data.frame(
+          animal = c("dog", "cat", "sea cucumber", "sea urchin"),
+          feel = c("furry", "fuzzy", "squishy", "spiny"),
+          weight = c(45, 8, 1.1, 0.8)
+          )
+```
+#1 - missing quotations around animal names, missing a comma in the weight column,  
+
+```{r, results = FALSE, warning=FALSE}
+country_climate <- data.frame(
+       country = c("Canada", "Panama", "South Africa", "Australia"),
+       climate = c("cold", "hot", "temperate", "hot/temperate"),
+       temperature = c(10, 30, 18, 15),
+       northern_hemisphere = c(TRUE, TRUE, FALSE, FALSE),
+       has_kangaroo = c(FALSE, FALSE, FALSE, TRUE)
+       )
+str(country_climate)
+```
+#2 I thought that has_kangaroo would be a factor but it was not. If stringsasFactors was false when the data frame was made then instead of factors you would have character vectors. To make sure that each column had the accurate data type quotation marks would need to be removed in northern_hemisphere and temperature and the 1 in has_kangaroo would need to be replaced by TRUE. 
+
+#Formatting Dates
+```{r, results = FALSE, warning=FALSE}
+str(surveys)
+library("lubridate")
+my_date <- ymd("2015-01-01")
+str(my_date)
+my_date <- ymd(paste("2015", "1", "1", sep = "-")) 
+str(my_date)
+paste(surveys$year, surveys$month, surveys$day, sep = "-")
+ymd(paste(surveys$year, surveys$month, surveys$day, sep = "-"))
+surveys$date <- ymd(paste(surveys$year, surveys$month, surveys$day, sep = "-"))
+str(surveys)
+summary(surveys$date)
+missing_dates <- surveys[is.na(surveys$date), c("year", "month", "day")]
+head(missing_dates)
+```
