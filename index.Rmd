@@ -6,6 +6,8 @@ bibliography: data/references.bibtex
 ---
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
-[Link to Lab1 ](file:///Users/spacenoodle/Desktop/EvoGeno/697/genomics-course/Lab1_redo.html)
+[Link to Lab1 ](Lab1_redo.html)
+[Link to Lab3a](Lab3a.html)
+[Link to Lab3b](Lab3b.html)
 
 #REFERENCES
