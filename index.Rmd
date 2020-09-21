@@ -6,4 +6,5 @@ output: html_document
 [Link to Lab1 ](Lab1_redo.html)
 [Link to Lab3a](Lab3a.html)
 [Link to Lab3b](Lab3b.html)
-
+[Link to Lab4a](Lab4a.html)
+[Link to Lab4](Lab4.Rmd)
