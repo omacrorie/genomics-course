@@ -1,0 +1,40 @@
+---
+title: "Lab 4a"
+output: html_document
+---
+```{r}
+library(tidyverse)
+surveys_complete <- read_csv("data/surveys_complete.csv")
+ggplot(data = surveys_complete)
+ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length))
+ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) + geom_point()
+```
+```{r}
+surveys_plot <- ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length))
+surveys_plot + 
+  geom_point()
+```
+
+```{r}
+library(hexbin)
+surveys_plot + 
+  geom_hex()
+```
+#The strength to the hex plot is that it is easier to look at and shows where the highest density of data points is. The downside to the hex plot is that if you have low counts you will not be able to tell from looking at the graph how many samples there are in each hexagon. You are not sure if you are looking at individual points or if there are more than one in the darkest blue circles. Thus because the data is binned you cannot see the raw data and that can be a con. 
+
+```{r}
+ggplot(data = surveys_complete, aes(x = weight, y = hindfoot_length)) + geom_point(alpha = 0.1)
+```
+
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) + geom_point(alpha = 0.1, color = "blue")
+```
+```{r}
+ggplot(data = surveys, mapping = aes(x = weight, y = hindfoot_length)) + geom_point(alpha = 0.1, aes(color = species_id))
+```
+
+
+```{r}
+ggplot(data = surveys, mapping = aes(x = species_id, y = weight)) + geom_point(alpha = 0.1, aes(color = species_id))
+```
+#I do not think this is a good way to show the data, especially because it seems not all the species have weight data. I think it would make more sense to remove the species that do not have weight data before plotting like this. I also think this data could be shown with a bar chart or a box plot. Since I do not know what the data will be used for I'm not sure if a bar chart or a box plot would be more appropriate than the scatter plot. 
