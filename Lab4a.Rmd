@@ -30,11 +30,11 @@ ggplot(data = surveys_complete, aes(x = weight, y = hindfoot_length)) + geom_poi
 ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) + geom_point(alpha = 0.1, color = "blue")
 ```
 ```{r}
-ggplot(data = surveys, mapping = aes(x = weight, y = hindfoot_length)) + geom_point(alpha = 0.1, aes(color = species_id))
+ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) + geom_point(alpha = 0.1, aes(color = species_id))
 ```
 
 
 ```{r}
-ggplot(data = surveys, mapping = aes(x = species_id, y = weight)) + geom_point(alpha = 0.1, aes(color = species_id))
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) + geom_point(alpha = 0.1, aes(color = species_id))
 ```
-#I do not think this is a good way to show the data, especially because it seems not all the species have weight data. I think it would make more sense to remove the species that do not have weight data before plotting like this. I also think this data could be shown with a bar chart or a box plot. Since I do not know what the data will be used for I'm not sure if a bar chart or a box plot would be more appropriate than the scatter plot. 
+# I  think this data could also be shown with a bar chart or a box plot. Since I don't know what the data will be used for I'm not sure if a bar chart or a box plot would be more appropriate than the scatter plot. 
