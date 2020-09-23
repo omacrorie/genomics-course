@@ -30,7 +30,7 @@ str(report_03_11_20)
 view(report_03_11_20)
 str(report_09_13_20)
 view(report_09_13_20)
-#09_13_20 report has columns for active, combined_key, incidence rate and case_fatality ratio while the 03_13_20 report does not. 
+#09_13_20 report has columns for active, combined_key, incidence rate and case_fatality ratio while the 03_13_20 report does not
 ``` 
 
 
