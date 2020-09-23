@@ -1,0 +1,128 @@
+---
+title: "Lab4"
+output: html_document
+---
+
+```{r, warning = FALSE}
+library(tidyverse)
+```
+#EXERCISE 1
+```{r, warning = FALSE}
+report_03_11_20 <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-11-2020.csv")) 
+report_03_11_20 <- rename(report_03_11_20, Country_Region = "Country/Region", Province_State = "Province/State")
+str(report_03_11_20)
+view(report_03_11_20)
+```
+```{r, warning = FALSE}
+library(DT)
+datatable(report_03_11_20)
+```
+```{r, warning = FALSE}
+report_03_13_20 <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-13-2020.csv")) 
+report_03_13_20 <- rename(report_03_13_20, Country_Region = "Country/Region", Province_State = "Province/State")
+str(report_03_11_20)
+view(report_03_11_20)
+str(report_03_13_20)
+View(report_03_13_20)
+
+report_09_13_20 <- read_csv("data/09-13-2020.csv")
+str(report_03_11_20)
+view(report_03_11_20)
+str(report_09_13_20)
+view(report_09_13_20)
+#09_13_20 report has columns for active, combined_key, incidence rate and case_fatality ratio while the 03_13_20 report does not. 
+``` 
+
+
+```{r, warning = FALSE}
+Countries_report_Deaths_03_13_20 <- report_03_13_20 %>%
+  group_by(Country_Region) %>%
+summarise(SumDeaths = sum(Deaths)) 
+
+Countries_report_Deaths_09_13_20 <- report_09_13_20 %>%
+  group_by(Country_Region) %>%
+summarise(SumDeaths = sum(Deaths)) 
+
+Countries_report_Confirmed_03_13_20 <- report_03_13_20 %>%
+  group_by(Country_Region) %>%
+summarise(SumConfirmed = sum(Confirmed)) 
+
+Countries_report_Confirmed_09_13_20 <- report_09_13_20 %>%
+  group_by(Country_Region) %>%
+summarise(SumConfirmed = sum(Confirmed))
+
+states_report_Deaths_03_13_20 <- report_03_13_20 %>%
+  filter(Country_Region == "US") %>%
+  group_by(Province_State) %>%
+summarise(SumDeaths = sum(Deaths)) 
+
+
+states_report_Deaths_09_13_20 <- report_09_13_20 %>%
+  filter(Country_Region == "US") %>%
+    group_by(Province_State) %>%
+summarise(SumDeaths = sum(Deaths)) 
+
+
+states_report_Confirmed_03_13_20 <- report_03_13_20 %>%
+  filter(Country_Region == "US") %>%
+      group_by(Province_State) %>%
+summarise(SumConfirmed = sum(Confirmed)) 
+
+
+states_report_Confirmed_09_13_20 <- report_09_13_20 %>%
+  filter(Country_Region == "US") %>%
+        group_by(Province_State) %>%
+summarise(SumConfirmed = sum(Confirmed)) 
+```
+
+
+```{r, warning = FALSE}
+top10_03_13_20_countries_Deaths <- arrange(Countries_report_Deaths_03_13_20, 
+desc(SumDeaths)) %>%
+slice(1:10)
+
+top10_09_13_20_countries_Deaths <- arrange(Countries_report_Deaths_09_13_20, 
+desc(SumDeaths)) %>%
+slice(1:10)
+
+top10_03_13_20_countries_confirmed <- arrange(Countries_report_Confirmed_03_13_20, 
+desc(SumConfirmed)) %>%
+slice(1:10)
+
+top10_09_13_20_countries_confirmed <- arrange(Countries_report_Confirmed_09_13_20, 
+desc(SumConfirmed)) %>%
+slice(1:10)
+
+top10_03_13_20_states_deaths <- arrange(states_report_Deaths_03_13_20, desc(SumDeaths)) %>%
+  slice(1:10)
+
+top10_09_13_20_states_death <- arrange(states_report_Deaths_09_13_20, desc(SumDeaths)) %>%
+   slice(1:10)
+
+top10_03_13_20_states_confirmed <- arrange(states_report_Confirmed_03_13_20, desc(SumConfirmed)) %>%
+  slice(1:10)
+
+top10_09_13_20_states_confirmed <- arrange(states_report_Confirmed_09_13_20, desc(SumConfirmed)) %>%
+  slice(1:10)
+```
+
+#EXERCISE 2
+```{r, warning = FALSE}
+ggplot(data = top10_03_13_20_countries_Deaths , aes(x = Country_Region, y = SumDeaths )) + geom_point()
+ggplot(data = top10_09_13_20_countries_Deaths, aes(x = Country_Region, y = SumDeaths)) + geom_point()
+ggplot(data = top10_03_13_20_countries_confirmed , aes(x = Country_Region, y = SumConfirmed)) + geom_point()
+ggplot(data = top10_09_13_20_countries_confirmed , aes(x = Country_Region, y = SumConfirmed)) + geom_point()
+
+ggplot(data =  top10_03_13_20_states_confirmed, aes(x = Province_State, y = SumConfirmed)) +  geom_bar(stat = 'identity') 
+ggplot(data = top10_09_13_20_states_confirmed, aes(x = Province_State, y = SumConfirmed)) +  geom_bar(stat = 'identity') 
+ggplot(data =  top10_03_13_20_states_deaths, aes(x = Province_State, y = SumDeaths)) +  geom_bar(stat = 'identity') 
+ggplot(data =  top10_09_13_20_states_death, aes(x = Province_State, y = SumDeaths)) +  geom_bar(stat = 'identity') 
+```
+
+
+
+
+
+
+
+
