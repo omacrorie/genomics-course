@@ -1,0 +1,165 @@
+---
+title: "Lab5"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(lubridate)
+library(dplyr)
+```
+
+```{r}
+time_series_confirmed_long <-read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")) %>%
+  rename(Province_State = "Province/State", Country_Region = "Country/Region") %>%
+  pivot_longer(-c(Province_State, Country_Region, Lat, Long),
+               names_to = "Date", values_to = "confirmed")
+```
+```{r}
+times_series_deaths_long <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv")) %>%
+rename(Province_State = "Province/State", Country_Region = "Country/Region") %>%
+  pivot_longer(-c(Province_State, Country_Region, Lat, Long),
+               names_to = "Date", values_to = "Deaths")
+```
+```{r}
+#Create Keys
+time_series_confirmed_long <- time_series_confirmed_long %>%
+  unite(Key, Province_State, Country_Region, Date, sep = ".", remove = FALSE)
+times_series_deaths_long <- times_series_deaths_long %>%
+  unite(Key, Province_State, Country_Region, Date, sep = ".") %>%
+  select(Key, Deaths)
+```
+```{r}
+#Join tables
+time_series_long_joined <- full_join(time_series_confirmed_long, times_series_deaths_long, by = c("Key")) %>%
+  select(-Key)
+```
+```{r}
+#Reformat data
+time_series_long_joined$Date <- mdy(time_series_long_joined$Date)
+```
+```{r}
+#Create report table with counts
+time_series_long_joined_counts <- time_series_long_joined %>%
+  pivot_longer(-c(Province_State, Country_Region, Lat, Long, Date), 
+               names_to = "Report_Type", values_to = "Counts")
+```
+```{r}
+#Plot graph to a pdf outputfile
+pdf("images/time_series_example_plot.pdf, width = 6, height = 3")
+pdf("images/time_series_example_plot.pdf", width=6, height=3)
+time_series_long_joined %>% 
+  group_by(Country_Region,Date) %>% 
+  summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+  filter (Country_Region == "US") %>% 
+    ggplot(aes(x = Date,  y = Deaths)) + 
+    geom_point() +
+    geom_line() +
+    ggtitle("US COVID-19 Deaths")
+dev.off()
+```
+```{r}
+#Plot a graph with a png outputfile 
+png("images/time_series_example_plot.png", width=6*ppi, height=6*ppi, res=ppi)
+time_series_long_joined %>% 
+  group_by(Country_Region,Date) %>% 
+  summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+  filter (Country_Region == "US") %>% 
+    ggplot(aes(x = Date,  y = Deaths)) + 
+    geom_point() +
+    geom_line() +
+    ggtitle("US COVID-19 Deaths")
+dev.off()
+```
+#RMarkdown loading images 
+![US COVID-19 Deaths] (images/time_series_example_plot.png)
+<img src= "images/time_series_example_plot.png" alt="US COVID-19 Deaths" style="width: 60 0px; />
+
+#Interactive graphs 
+```{r}
+library(plotly)
+ggplotly(
+  time_series_long_joined %>%
+    group_by(Country_Region,Date) %>%
+    summarise_at(c("Confirmed", "Deaths"), sum) %>%
+    filter (Country_Region == "US") %>%
+    ggplot(aes(x = Date, y = Deaths)) +
+    geom_point() +
+    geom_line() +
+    ggtitle("US COVID-19 Deaths")
+)
+```
+```{r}
+library(plotly)
+US_deaths <- time_series_long_joined %>% 
+    group_by(Country_Region,Date) %>% 
+    summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+    filter (Country_Region == "US")
+ p <- ggplot(data = US_deaths, aes(x = Date,  y = Deaths)) + 
+        geom_point() +
+        geom_line() +
+        ggtitle("US COVID-19 Deaths")
+ggplotly(p)
+```
+```{r} 
+#Animated Graphs with gganimate **cannot load transformr
+install.packages("transformr")
+library(gganimate)
+library(transformr)
+theme_set(theme_bw())
+date_time <- time_series_long_joined %>%
+  group_by(Country_Region,Date) %>%
+  summarise_at(c("Confirmed, "Deaths"), sum) %>%
+  filter (Country_Region %in% c("China", "Korea, South", "Jaan", "Italy", "US""))
+p <- ggplot(data_time, aes(x = Date, y = Confimed, color = Counry_Region)) +
+  geom_point() +
+  geom_line () +
+  ggtitle("Confirmed COVID-19 Cases") +
+  geom_point(aes(group = seq_along(Date))) + 
+  transition_reveal(Date)
+animate(p, end_pause = 15)
+```
+```{r}
+#EXERCISES
+#1
+ppi <- 300
+png("time_series_latitude_Deaths.png", width=3*ppi, height=3*ppi, res=ppi)
+ggplot(data = time_series_long_joined, aes(x = Lat, y = Deaths)) + 
+  geom_point() + 
+  geom_line() 
+dev.off()
+```
+```{r}
+#2
+library(plotly)
+ggplotly(
+ggplot(data = Confirmed_State_6_13_19_13_joined, aes(x = Province_State, y = Confirmed_6_13_2020)) + 
+  geom_bar(stat= 'identity') + 
+  xlab("Province or State") + 
+  ylab("USA Confirmed Cases 06/13/20") + 
+  ggtitle("USA Confirmed Cases 06/13/20 by State")
+)
+```
+#3
+```{r}
+time_series_long_joined %>%
+  group_by(Country_Region,Date) %>%
+  summarise_at(c("Confirmed", "Death"), sum) %>%
+  filter(Country_Region %in% c("China", "Korea, South", "Japan", "Italy", "US"))
+p <- ggplot(data_time, aes(x = Lat, y = Confirmed, color = Country_Region)) + 
+  geom_point() + 
+  geom_line() +
+  transition_reveal(Lat)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,193 @@
+---
+title: "Data Visualization"
+output: html_document
+---
+```{r}
+library(tidyverse)
+surveys_complete <- read_csv("data/surveys_complete.csv")
+ggplot(data = surveys_complete)
+ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length))
+ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) + geom_point()
+```
+```{r}
+surveys_plot <- ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length))
+surveys_plot + 
+  geom_point()
+```
+
+```{r}
+library(hexbin)
+surveys_plot + 
+  geom_hex()
+```
+#The strength to the hex plot is that it is easier to look at and shows where the highest density of data points is. The downside to the hex plot is that if you have low counts you will not be able to tell from looking at the graph how many samples there are in each hexagon. You are not sure if you are looking at individual points or if there are more than one in the darkest blue circles. Thus because the data is binned you cannot see the raw data and that can be a con. 
+
+```{r}
+ggplot(data = surveys_complete, aes(x = weight, y = hindfoot_length)) + geom_point(alpha = 0.1)
+```
+
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) + geom_point(alpha = 0.1, color = "blue")
+```
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) + geom_point(alpha = 0.1, aes(color = species_id))
+```
+
+
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) + geom_point(alpha = 0.1, aes(color = species_id))
+```
+# I  think this data could also be shown with a bar chart or a box plot. Since I don't know what the data will be used for I'm not sure if a bar chart or a box plot would be more appropriate than the scatter plot. 
+
+#Boxplot
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species, y = weight)) +
+geom_boxplot()
+```
+```{r}
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) + 
+  geom_boxplot(alpha = 0) +
+  geom_jitter(alpha = 0.3, color = "tomato")
+#Challenge
+ggplot(data = surveys_complete, mapping = aes(x = species, y = weight)) +
+geom_violin()
+ggplot(data = surveys_complete, mapping = aes(x = species, y = weight)) +
+geom_violin() +
+  scale_y_log10()
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = hindfoot_length)) +
+  geom_boxplot(alpha = 0) +
+  geom_jitter(alpha = 0.3, color = "tomato")
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = hindfoot_length)) +
+  geom_boxplot(alpha = 0) +
+  geom_jitter(alpha = 0.3, color = plot_id)
+```
+#Plotting time series
+```{r}
+yearly_counts <- surveys_complete %>%
+  count(year, genus)
+ggplot(data = yearly_counts, aes(x = year, y = n)) + 
+  geom_line()
+```
+```{r}
+ggplot(data = yearly_counts, aes(x = year, y = n, group = genus)) + 
+  geom_line()
+```
+```{r}
+ggplot(data = yearly_counts, aes(x = year, y = n, color = genus)) + 
+  geom_line()
+```
+```{r}
+yearly_counts %>%
+  ggplot(mapping = aes(x = year, y = n, color = genus)) + 
+  geom_line()
+```
+```{r}
+yearly_counts_graph <- surveys_complete %>%
+  count(year, genus) %>%
+  ggplot(mapping = aes(x = year, y = n, color = genus)) +
+  geom_line()
+yearly_counts_graph
+
+```
+```{r}
+ggplot(data = yearly_counts, aes(x = year, y = n)) + 
+  geom_line() + 
+  facet_wrap(facets = vars(genus))
+```
+```{r}
+yearly_sex_counts <- surveys_complete %>%
+                      count(year, genus, sex)
+ggplot(data = yearly_sex_counts, aes(x = year, y = n, color = sex)) + 
+  geom_line() + 
+  facet_wrap(facets = vars(genus))
+```
+
+```{r}
+ggplot(data = yearly_sex_counts, mapping = aes(x = year, y = n, color = sex)) +
+  geom_line() + 
+  facet_grid(rows = vars(sex), cols = vars(genus))
+```
+```{r}
+ggplot(data = yearly_sex_counts, mapping = aes(x = year, y = n, color = sex)) + geom_line() + 
+  facet_grid(rows = vars(genus))
+```
+```{r}
+ggplot(data = yearly_sex_counts, 
+       mapping = aes(x = year, y = n, color = sex)) +
+  geom_line() +
+  facet_grid(cols = vars(genus))
+```
+```{r}
+ ggplot(data = yearly_sex_counts, 
+        mapping = aes(x = year, y = n, color = sex)) +
+     geom_line() +
+     facet_wrap(vars(genus)) +
+     theme_bw()
+```
+#Challenge
+```{r}
+yearly_weight <- surveys_complete %>%
+                group_by(year, species_id) %>%
+                 summarize(avg_weight = mean(weight))
+ggplot(data = yearly_weight, mapping = aes(x=year, y=avg_weight)) +
+   geom_line() +
+   facet_wrap(vars(species_id)) +
+   theme_bw()
+```
+```{r}
+ggplot(data = yearly_sex_counts, aes(x = year, y = n, color = sex)) +
+    geom_line() +
+    facet_wrap(vars(genus)) +
+    labs(title = "Observed genera through time",
+         x = "Year of observation",
+         y = "Number of individuals") +
+    theme_bw()
+```
+```{r}
+ggplot(data = yearly_sex_counts, mapping = aes(x = year, y = n, color = sex)) +
+    geom_line() +
+    facet_wrap(vars(genus)) +
+    labs(title = "Observed genera through time",
+        x = "Year of observation",
+        y = "Number of individuals") +
+    theme_bw() +
+    theme(text=element_text(size = 16))
+```
+```{r}
+ggplot(data = yearly_sex_counts, mapping = aes(x = year, y = n, color = sex)) +
+    geom_line() +
+    facet_wrap(vars(genus)) +
+    labs(title = "Observed genera through time",
+        x = "Year of observation",
+        y = "Number of individuals") +
+    theme_bw() +
+    theme(axis.text.x = element_text(colour = "grey20", size = 12, angle = 90, hjust = 0.5, vjust = 0.5),
+                        axis.text.y = element_text(colour = "grey20", size = 12),
+                        strip.text = element_text(face = "italic"),
+                        text = element_text(size = 16))
+```
+```{r}
+grey_theme <- theme(axis.text.x = element_text(colour="grey20", size = 12, 
+                                               angle = 90, hjust = 0.5, 
+                                               vjust = 0.5),
+                    axis.text.y = element_text(colour = "grey20", size = 12),
+                    text=element_text(size = 16))
+
+ggplot(surveys_complete, aes(x = species_id, y = hindfoot_length)) +
+    geom_boxplot() +
+    grey_theme
+```
+#Challenge 
+```{r}
+ggplot(data = yearly_sex_counts, 
+       mapping = aes(x = year, y = n, color = sex)) +
+  geom_line() +
+  facet_grid(cols = vars(genus)) +
+   theme(legend.position = "bottom") +
+  labs(x = "Year", y = "Number of individuals") + 
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90))
+
+```
+
+
