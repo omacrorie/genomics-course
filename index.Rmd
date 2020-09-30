@@ -8,3 +8,5 @@ output: html_document
 [Link to Lab3b](Lab3b.html)
 [Link to Lab4a](Lab4a.html)
 [Link to Lab4](Lab4.html)
+[Link to Lab5](Lab5_092820.Rmd)
+[Link to Lab5 extra](Lab5_extra.Rmd)
