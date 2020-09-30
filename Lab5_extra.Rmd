@@ -62,7 +62,7 @@ dev.off()
 png("images/time_series_example_plot.png", width=6*ppi, height=6*ppi, res=ppi)
 time_series_long_joined %>% 
   group_by(Country_Region,Date) %>% 
-  summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+  summarise_at(c("confirmed", "Deaths"), sum) %>% 
   filter (Country_Region == "US") %>% 
     ggplot(aes(x = Date,  y = Deaths)) + 
     geom_point() +
@@ -80,7 +80,7 @@ library(plotly)
 ggplotly(
   time_series_long_joined %>%
     group_by(Country_Region,Date) %>%
-    summarise_at(c("Confirmed", "Deaths"), sum) %>%
+    summarise_at(c("confirmed", "Deaths"), sum) %>%
     filter (Country_Region == "US") %>%
     ggplot(aes(x = Date, y = Deaths)) +
     geom_point() +
@@ -92,7 +92,7 @@ ggplotly(
 library(plotly)
 US_deaths <- time_series_long_joined %>% 
     group_by(Country_Region,Date) %>% 
-    summarise_at(c("Confirmed", "Deaths"), sum) %>% 
+    summarise_at(c("confirmed", "Deaths"), sum) %>% 
     filter (Country_Region == "US")
  p <- ggplot(data = US_deaths, aes(x = Date,  y = Deaths)) + 
         geom_point() +
@@ -102,13 +102,12 @@ ggplotly(p)
 ```
 ```{r} 
 #Animated Graphs with gganimate **cannot load transformr
-install.packages("transformr")
 library(gganimate)
 library(transformr)
 theme_set(theme_bw())
 date_time <- time_series_long_joined %>%
   group_by(Country_Region,Date) %>%
-  summarise_at(c("Confirmed, "Deaths"), sum) %>%
+  summarise_at(c("confirmed, "Deaths"), sum) %>%
   filter (Country_Region %in% c("China", "Korea, South", "Jaan", "Italy", "US""))
 p <- ggplot(data_time, aes(x = Date, y = Confimed, color = Counry_Region)) +
   geom_point() +
@@ -143,9 +142,9 @@ ggplot(data = Confirmed_State_6_13_19_13_joined, aes(x = Province_State, y = Con
 ```{r}
 time_series_long_joined %>%
   group_by(Country_Region,Date) %>%
-  summarise_at(c("Confirmed", "Death"), sum) %>%
-  filter(Country_Region %in% c("China", "Korea, South", "Japan", "Italy", "US"))
-p <- ggplot(data_time, aes(x = Lat, y = Confirmed, color = Country_Region)) + 
+  summarise_at(c("confirmed", "Deaths"), sum) %>%
+  filter(Country_Region %in% c("China", "Korea, South", "Japan", "Italy", "US")) %>%
+p <- ggplot(aes(x = Lat, y = Confirmed, color = Country_Region)) + 
   geom_point() + 
   geom_line() +
   transition_reveal(Lat)
