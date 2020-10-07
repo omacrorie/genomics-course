@@ -1,0 +1,289 @@
+---
+title: "Lab6"
+output: html_document
+bibliography: data/references.bibtex
+---
+Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015], using Lab6 from EvoGeno[@Lab6].
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+library(tidyverse)
+library(maps)
+library(mapdata)
+library(lubridate)
+library(viridis)
+library(wesanderson)
+```
+
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+daily_report <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
+  rename(Long = "Long_") 
+    
+ggplot(daily_report, aes(x = Long, y = Lat, size = Confirmed/1000)) +
+    borders("world", colour = NA, fill = "grey90") +
+    theme_bw() +
+    geom_point(shape = 21, color='purple', fill='purple', alpha = 0.5) +
+    labs(title = 'World COVID-19 Confirmed cases',x = '', y = '',
+        size="Cases (x1000))") +
+    theme(legend.position = "right") +
+    coord_fixed(ratio=1.5)
+```
+
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+daily_report <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-05-2020.csv")) %>% 
+  rename(Long = "Long_") %>% 
+  filter(Country_Region == "US") %>% 
+  filter (!Province_State %in% c("Alaska","Hawaii", "American Samoa",
+                  "Puerto Rico","Northern Mariana Islands", 
+                  "Virgin Islands", "Recovered", "Guam", "Grand Princess",
+                  "District of Columbia", "Diamond Princess")) %>% 
+  filter(Lat > 0)
+ggplot(daily_report, aes(x = Long, y = Lat, size = Confirmed/1000)) +
+    borders("state", colour = "black", fill = "grey90") +
+    theme_bw() +
+    geom_point(shape = 21, color='purple', fill='purple', alpha = 0.5) +
+    labs(title = 'COVID-19 Confirmed Cases in the US', x = '', y = '',
+        size="Cases (x1000))") +
+    theme(legend.position = "right") +
+    coord_fixed(ratio=1.5)
+```
+
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+mybreaks <- c(1, 100, 1000, 10000, 10000)
+ggplot(daily_report, aes(x = Long, y = Lat, size = Confirmed)) +
+    borders("state", colour = "white", fill = "grey90") +
+    geom_point(aes(x=Long, y=Lat, size=Confirmed, color=Confirmed),stroke=F, alpha=0.7) +
+    scale_size_continuous(name="Cases", trans="log", range=c(1,7), 
+                        breaks=mybreaks, labels = c("1-99",
+                        "100-999", "1,000-9,999", "10,000-99,999", "50,000+")) +
+    scale_color_viridis_c(option="viridis",name="Cases",
+                        trans="log", breaks=mybreaks, labels = c("1-99",
+                        "100-999", "1,000-9,999", "10,000-99,999", "50,000+"))  +
+  theme_void() + 
+    guides( colour = guide_legend()) +
+    labs(title = "Anisa Dhana's lagout for COVID-19 Confirmed Cases in the US'") +
+    theme(
+      legend.position = "bottom",
+      text = element_text(color = "#22211d"),
+      plot.background = element_rect(fill = "#ffffff", color = NA), 
+      panel.background = element_rect(fill = "#ffffff", color = NA), 
+      legend.background = element_rect(fill = "#ffffff", color = NA)
+    ) +
+    coord_fixed(ratio=1.5)
+```
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+daily_report <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
+  rename(Long = "Long_") %>% 
+  filter(Country_Region == "US") %>% 
+  group_by(Province_State) %>% 
+  summarize(Confirmed = sum(Confirmed)) %>% 
+  mutate(Province_State = tolower(Province_State))
+# load the US map data
+us <- map_data("state")
+# We need to join the us map data with our daily report to make one data frame/tibble
+state_join <- left_join(us, daily_report, by = c("region" = "Province_State"))
+```
+
+
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+# plot state map
+ggplot(data = us, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+# Add data layer
+  geom_polygon(data = state_join, aes(fill = Confirmed), color = "black") +
+  scale_fill_gradientn(colours = 
+                         wes_palette("Zissou1", 100, type = "continuous"),
+                         trans = "log10") +
+  labs(title = "COVID-19 Confirmed Cases in the US'")
+```
+
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+library(RColorBrewer)
+# To display only colorblind-friendly brewer palettes, specify the option colorblindFriendly = TRUE as follow:
+# display.brewer.all(colorblindFriendly = TRUE)
+# Get and format the covid report data
+report_03_27_2020 <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
+  rename(Long = "Long_") %>% 
+  unite(Key, Admin2, Province_State, sep = ".") %>% 
+  group_by(Key) %>% 
+  summarize(Confirmed = sum(Confirmed)) %>% 
+  mutate(Key = tolower(Key))
+# dim(report_03_27_2020)
+# get and format the map data
+us <- map_data("state")
+counties <- map_data("county") %>% 
+  unite(Key, subregion, region, sep = ".", remove = FALSE)
+# Join the 2 tibbles
+state_join <- left_join(counties, report_03_27_2020, by = c("Key"))
+# sum(is.na(state_join$Confirmed))
+ggplot(data = us, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+  # Add data layer
+  borders("state", colour = "black") +
+  geom_polygon(data = state_join, aes(fill = Confirmed)) +
+  scale_fill_gradientn(colors = brewer.pal(n = 5, name = "PuRd"),
+                       breaks = c(1, 10, 100, 1000, 10000, 100000),
+                       trans = "log10", na.value = "White") +
+  ggtitle("Number of Confirmed Cases by US County") +
+  theme_bw() 
+```
+
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+daily_report <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
+  rename(Long = "Long_") %>% 
+  filter(Province_State == "Massachusetts") %>% 
+  group_by(Admin2) %>% 
+  summarize(Confirmed = sum(Confirmed)) %>% 
+  mutate(Admin2 = tolower(Admin2))
+us <- map_data("state")
+ma_us <- subset(us, region == "massachusetts")
+counties <- map_data("county")
+ma_county <- subset(counties, region == "massachusetts")
+state_join <- left_join(ma_county, daily_report, by = c("subregion" = "Admin2")) 
+# plot state map
+ggplot(data = ma_county, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+# Add data layer
+  geom_polygon(data = state_join, aes(fill = Confirmed), color = "white") +
+    scale_fill_gradientn(colors = brewer.pal(n = 5, name = "BuGn"),
+                         trans = "log10") +
+  labs(title = "COVID-19 Confirmed Cases in Massachusetts'")
+```
+
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+daily_report
+```
+
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+library(plotly)
+ggplotly(
+  ggplot(data = ma_county, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+# Add data layer
+  geom_polygon(data = state_join, aes(fill = Confirmed), color = "black") +
+    scale_fill_gradientn(colours = 
+                         wes_palette("Zissou1", 100, type = "continuous")) +
+  ggtitle("COVID-19 Cases in MA") +
+# Cleaning up the graph
+  labs(x=NULL, y=NULL) +
+  theme(panel.border = element_blank()) +
+  theme(panel.background = element_blank()) +
+  theme(axis.ticks = element_blank()) +
+  theme(axis.text = element_blank())
+)
+```
+#EXERCISE 1
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+daily_report <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-26-2020.csv")) %>%
+rename(Long = "Long_") %>%
+group_by(Country_Region) %>%
+  filter(Lat != "NA") %>%
+filter(Long != "NA") %>%
+summarize(sumDeaths = sum(Deaths), meanLat = mean(Lat), meanLong = mean(Long))
+ggplot(daily_report, aes(x = meanLong, y = meanLat, size = sumDeaths/1000)) +
+    borders("world", colour = NA, fill = "grey90") +
+    theme_bw() +
+    geom_point(shape = 21, color='purple', fill='purple', alpha = 0.5) +
+    labs(title = 'World COVID-19 Confirmed cases',x = '', y = '',
+        size="Cases (x1000))") +
+    theme(legend.position = "right") +
+    coord_fixed(ratio=1.5)
+```
+
+#EXERCISE 2
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+mybreaks <- c(1, 100, 1000, 10000, 10000)
+daily_report2 <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-26-2020.csv"))
+  filter(daily_report2, Country_Region == "US", Long_ < 0) %>%
+ggplot(aes(x = Long_, y = Lat, size = Confirmed)) +
+    borders("state", colour = "white", fill = "grey90") +
+    geom_point(aes(x=Long_, y=Lat, size=Confirmed/10000000000, color=Confirmed),stroke=F, alpha=0.7) +
+    scale_size_continuous(name="Cases", trans="log", range=c(1,7), 
+                        breaks=mybreaks, labels = c("1-99",
+                        "100-999", "1,000-9,999", "10,000-99,999", "50,000+")) +
+    scale_color_viridis_c(option="viridis",name="Cases",
+                        trans="log", breaks=mybreaks, labels = c("1-99",
+                        "100-999", "1,000-9,999", "10,000-99,999", "50,000+")) +  
+  theme_void() + 
+    guides( colour = guide_legend()) +
+    labs(title = "Anisa Dhana's lagout for COVID-19 Confirmed Cases in the US'") +
+    theme(
+      legend.position = "bottom",
+      text = element_text(color = "#22211d"),
+      plot.background = element_rect(fill = "#ffffff", color = NA), 
+      panel.background = element_rect(fill = "#ffffff", color = NA), 
+      legend.background = element_rect(fill = "#ffffff", color = NA)
+    ) +
+    coord_fixed(ratio=1.5)
+```
+
+#EXERCISE 3
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+library(RColorBrewer)
+report_03_27_2020 <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-26-2020.csv")) %>% 
+  rename(Long = "Long_") %>% 
+  unite(Key, Admin2, Province_State, sep = ".") %>% 
+  group_by(Key) %>% 
+  summarize(Confirmed = sum(Confirmed)) %>% 
+  mutate(Key = tolower(Key))
+# dim(report_03_27_2020)
+# get and format the map data
+us <- map_data("state")
+counties <- map_data("county") %>% 
+  unite(Key, subregion, region, sep = ".", remove = FALSE)
+# Join the 2 tibbles
+state_join <- left_join(counties, report_03_27_2020, by = c("Key"))
+# sum(is.na(state_join$Confirmed))
+ggplot(data = us, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+  # Add data layer
+  borders("state", colour = "black") +
+  geom_polygon(data = state_join, aes(fill = Confirmed)) +
+  scale_fill_gradientn(colors = brewer.pal(n = 5, name = "PuRd"),
+                       breaks = c(1, 10, 100, 1000, 10000, 100000),
+                       trans = "log10", na.value = "White") +
+  ggtitle("Number of Confirmed Cases by US County") +
+  theme_light() 
+```
+
+
+#EXERCISE 4
+
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+daily_report <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
+  rename(Long = "Long_") %>% 
+  filter(Province_State == "Maine") %>% 
+  group_by(Admin2) %>% 
+  summarize(Confirmed = sum(Confirmed)) %>% 
+  mutate(Admin2 = tolower(Admin2))
+us <- map_data("state")
+me_us <- subset(us, region == "maine")
+counties <- map_data("county")
+me_county <- subset(counties, region == "maine")
+me_state_join <- left_join(me_county, daily_report, by = c("subregion" = "Admin2")) 
+# plot state map
+ggplot(data = me_county, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+# Add data layer
+  geom_polygon(data = me_state_join, aes(fill = Confirmed), color = "white") +
+    scale_fill_gradientn(colors = brewer.pal(n = 5, name = "BuGn"),
+                          trans = "log10") +
+  labs(title = "COVID-19 Confirmed Cases in Maine")
+```
+
+```{r, echo=FALSE, results = 'hide', message=FALSE, warning=FALSE}
+library(plotly)
+ggplotly(
+  ggplot(data = me_county, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+# Add data layer
+  geom_polygon(data = me_state_join, aes(fill = Confirmed), color = "black") +
+    scale_fill_gradientn(colours = 
+                         wes_palette("Zissou1", 100, type = "continuous")) +
+  ggtitle("COVID-19 Cases in ME") +
+# Cleaning up the graph
+  labs(x=NULL, y=NULL) +
+theme_minimal()
+)
+```
+#REFERENCES
+
+
