@@ -11,4 +11,4 @@ output: html_document
 [Link to Lab5](Lab5_092820.Rmd)
 [Link to Lab5 extra](Lab5_extra.Rmd)
 [Link to Lab6](Lab6.html)
-[Link to Lab7_RNAseq](Lab7_usethisone.html) 
+[Link to Lab7](Lab7_usethisone.html) 
