@@ -1,0 +1,244 @@
+---
+title: "Lab10"
+output: html_document
+---
+```{r}
+library(vcfR)
+```
+
+```{r}
+data(vcfR_example)
+vcf
+```
+
+```{r}
+strwrap(vcf@meta[1:7])
+```
+
+```{r}
+queryMETA(vcf)
+```
+
+```{r}
+queryMETA(vcf, element = 'DP')
+```
+
+```{r}
+queryMETA(vcf, element = 'FORMAT=<ID=DP')
+```
+
+
+```{r}
+head(getFIX(vcf))
+```
+
+
+```{r}
+vcf@gt[1:6, 1:4]
+```
+
+```{r}
+vcf <- read.vcfR("pinfsc50_filtered.vcf.gz")
+```
+
+```{r}
+head(vcf)
+```
+
+```{r}
+write.vcf(vcf, "myVCFdata_filtered.vcf.gz")
+```
+
+
+
+```{r}
+#Part 1 EXERCISE 1
+?read.vcfR
+```
+
+```{r}
+#Part 1 EXERCISE 2
+queryMETA(vcf, element = 'AD')
+```
+
+```{r}
+#Part 1 EXERCISE 3
+tail(vcf@fix)
+```
+
+```{r}
+#Part 1 EXERCISE 4
+plot(vcf)
+```
+
+```{r}
+#Part 1 EXERCISE 5
+colnames(vcf@gt)
+```
+
+```{r}
+library('vcfR')
+vcf <- read.vcfR("pinfsc50_filtered.vcf.gz")
+```
+
+```{r}
+x <- vcfR2genlight(vcf)
+x
+```
+
+```{r}
+# vcfR
+gt <- extract.gt(vcf, element = "GT")
+gt[c(2,6,18), 1:3]
+```
+
+```{r}
+# genlight
+t(as.matrix(x))[c(1,5,17), 1:3]
+```
+
+```{r}
+install.packages("adegenet", dep = TRUE, repo = "https://cran.r-project.org")
+```
+
+
+```{r}
+library(adegenet)
+```
+
+```{r}
+pop(x) <- as.factor(c("us", "eu", "us", "af", "eu", "us", "mx", "eu", "eu", "sa", "mx", "sa", "us", "sa", "Pmir", "us", "eu", "eu"))
+popNames(x)
+```
+
+```{r}
+ploidy(x) <- 2
+```
+
+```{r}
+x.dist <- dist(x)
+```
+
+```{r}
+x.dist <- poppr::bitwise.dist(x)
+```
+
+```{r}
+library(vcfR)
+
+# Find the files.
+vcf_file <- system.file("extdata", "pinf_sc50.vcf.gz", package = "pinfsc50")
+dna_file <- system.file("extdata", "pinf_sc50.fasta", package = "pinfsc50")
+gff_file <- system.file("extdata", "pinf_sc50.gff", package = "pinfsc50")
+
+# Input the files.
+vcf <- read.vcfR(vcf_file, verbose = FALSE)
+dna <- ape::read.dna(dna_file, format = "fasta")
+gff <- read.table(gff_file, sep="\t", quote="")
+
+# Create a chromR object.
+chrom <- create.chromR(name="Supercontig", vcf=vcf, seq=dna, ann=gff, verbose=TRUE)
+```
+
+
+```{r}
+chrom
+plot(chrom)
+```
+
+
+```{r}
+chromoqc(chrom, dp.alpha = 66)
+```
+
+```{r}
+chrom <- proc.chromR(chrom, verbose = TRUE)
+```
+
+```{r}
+plot(chrom)
+```
+
+```{r}
+chromoqc(chrom, dp.alpha = 66)
+```
+
+```{r}
+#vcf <- read.vcfR("pinfsc50_qc.vcf.gz", verbose = FALSE)
+vcf <- read.vcfR("pinfsc50_filtered.vcf.gz", verbose = FALSE)
+chrom <- create.chromR(name="Supercontig", vcf=vcf, seq=dna, ann=gff, verbose=FALSE)
+chrom <- proc.chromR(chrom, verbose = FALSE)
+chromoqc(chrom, dp.alpha = 66)
+```
+
+```{r}
+head(chrom@var.info)
+```
+
+```{r}
+head(chrom@win.info)
+```
+
+```{r}
+library(vcfR)
+data(vcfR_example)
+pop <- as.factor(c("us", "eu", "us", "af", "eu", "us", "mx", "eu", "eu", "sa", "mx", "sa", "us", "sa", "Pmir", "us", "eu", "eu"))
+myDiff <- genetic_diff(vcf, pops = pop, method = 'nei')
+knitr::kable(head(myDiff[,1:15]))
+```
+
+```{r}
+knitr::kable(head(myDiff[,16:19]))
+```
+
+
+```{r}
+knitr::kable(round(colMeans(myDiff[,c(3:9,16,19)], na.rm = TRUE), digits = 3))
+```
+
+```{r}
+library(reshape2)
+library(ggplot2)
+
+dpf <- melt(myDiff[,c(3:8,19)], varnames=c('Index', 'Sample'), value.name = 'Depth', na.rm=TRUE)
+```
+
+```{r}
+p <- ggplot(dpf, aes(x=variable, y=Depth)) + geom_violin(fill="#2ca25f", adjust = 1.2)
+p <- p + xlab("")
+p <- p + ylab("")
+p <- p + theme_bw()
+p
+```
+
+```{r}
+#Part 2 EXERCISE 1 
+plot(getPOS(vcf), myDiff$Gprimest,  pch = 20, col = "#1E90FF44", xlab = "", ylab = "", ylim = c(0, 1), xaxt = "n")
+axis(side = 1, at = seq(0, 1e5, by = 1e4), labels = seq(0, 100, by = 10))
+title(xlab='Genomic position (Kbp)')
+title(ylab = expression(italic("G'"["ST"])))
+```
+
+```{r}
+#Part 2 Exercise 2
+table(pop)
+```
+
+```{r}
+#Part 2 Exercise 3
+chromoqc(chrom, dp.alpha = 66, xlim = c(2e05, 4e05))
+```
+
+```{r}
+#Part 2 Exercise 4 
+queryMETA(vcf)
+```
+
+
+
+
+
+
+
+
+
