@@ -12,4 +12,10 @@ output: html_document
 [Link to Lab5 extra](Lab5_extra.Rmd)
 [Link to Lab6](Lab6.html)
 [Link to Lab7_RNAseq](Lab7_usethisone.html) 
-[Link to Lab8](Lab8.html)
+[Link to Lab8_phylogenetics](Lab8.html)
+[Link to Lab9](Lab9.html)
+[Link to Lab9x](Lab9x.html)
+[Link to Lab10](Lab10.html)
+[Link to Lab11x](Lab11x.html)
+
+
