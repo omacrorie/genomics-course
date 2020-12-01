@@ -1,6 +1,6 @@
 ---
 title: "index"
-author: "Olivia Macrorie"
+author: "Olivia_Macrorie"
 output: html_document
 ---
 [Link to Lab1 ](Lab1_redo.html)
