@@ -17,5 +17,5 @@ output: html_document
 [Link to Lab9x](Lab9x.html)
 [Link to Lab10](Lab10.html)
 [Link to Lab11x](Lab11x.html)
-
+[Link to Lab12](Lab12.html)
 
