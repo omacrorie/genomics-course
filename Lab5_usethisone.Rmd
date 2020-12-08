@@ -1,5 +1,5 @@
 ---
-title: "Lab5_usethisone"
+title: "Lab5_with_exercises"
 output: html_document
 ---
 
@@ -199,4 +199,124 @@ time_series_long_joined_counts %>%
     ggtitle("US COVID-19 Cases")
 ```
 
+```{r}
+#Exercise 1 - see in the Data Visualization file
+```
+
+```{r}
+#Exercise 2 
+Confirmed_State_6_13 <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/06-13-2020.csv")) %>%
+  filter(Country_Region == "US") %>%
+  group_by(Province_State, Country_Region) %>%
+  summarise(Confirmed = sum(Confirmed)) 
+```
+
+
+```{r}
+Confirmed_State_6_13_9_13_joined <- full_join(Confirmed_State_6_13,
+      Confirmed_State_9_13, by = c("Province_State")) %>% 
+      rename(Confirmed_6_13_2020 = "Confirmed.x", Confirmed_9_13_2020 = "Confirmed.y") %>% 
+      select(-Country_Region.x, -Country_Region.y) %>% 
+      replace_na(list(Confirmed_3_13_2020 = 0))
+head(Confirmed_State_6_13_9_13_joined)
+
+```
+```{r, fig.width=10, fig.height=10}
+ggplot(Confirmed_State_6_13_9_13_joined, aes(x = Confirmed_6_13_2020, y = Province_State)) + 
+  geom_bar(stat="identity")
+```
+```{r, fig.width=10, fig.height=10}
+ggplot(Confirmed_State_6_13_9_13_joined, aes(x = Confirmed_9_13_2020, y = Province_State)) + 
+  geom_bar(stat="identity")
+```
+
+
+
+
+```{r, fig.width=10, fig.height=10}
+#Exercise 3
+ggplot(Confirmed_State_6_13_9_13_joined, aes(x = Confirmed_6_13_2020, y = Province_State)) + 
+  geom_bar(stat="identity") + 
+  xlab("Confirmed COVID Cases 6/13/2020") + 
+  ylab("USA Province or State")
+```
+
+```{r, fig.width=10, fig.height=10}
+ggplot(Confirmed_State_6_13_9_13_joined, aes(x = Confirmed_9_13_2020, y = Province_State)) + 
+  geom_bar(stat="identity") + 
+  xlab("Confirmed COVID Cases 9/13/2020") + 
+  ylab("USA Province or State")
+```
+
+
+
+```{r}
+#Exercise 4
+time_series_long_joined %>%
+arrange(Date) %>%
+group_by(Date) %>%
+summarise(sumDeaths = sum(Deaths)) %>%
+  ggplot(aes(x=Date, y =sumDeaths)) + 
+  geom_point()
+
+```
+
+```{r}
+#Exercise 5
+time_series_long_joined_deathsconfirmed <- time_series_long_joined %>%
+  mutate(deaths_confirmed = Deaths/Confirmed)
+```
+
+```{r}
+#Exercise 6
+time_series_long_joined_deathsconfirmed %>%
+  filter(Country_Region == "US") %>%
+  ggplot(aes(x=Date, y = deaths_confirmed)) + 
+  geom_bar(stat="identity") + 
+  ylab("US Deaths/confirmed")
+```
+```{r}
+#Exercise 7 
+time_series_long_joined %>%
+  group_by(Country_Region) %>%
+summarise(SumDeaths = sum(Deaths)) %>%
+arrange(desc(SumDeaths)) %>%
+filter(SumDeaths > 4686039) %>%
+ ggplot(aes(x=Country_Region, y=SumDeaths)) + 
+  geom_bar(stat="identity") 
+```
+
+```{r, fig.height=5}
+#Exercise 8 
+time_series_long_joined %>%
+filter(Country_Region %in% c("US", "Brazil", "India", "Mexico", "United Kingdom", "Italy", "France", "Spain", "Iran", "Peru")) %>%
+ggplot(aes(x = Date,  y = Deaths)) + 
+    geom_bar(stat="identity") +
+    ggtitle("COVID-19 Deaths in Top 10 Countries") +
+    facet_wrap(~Country_Region, ncol=2, scales="free_y")
+```
+
+```{r}
+#Exercise 9
+time_series_long_joined %>%
+filter(Country_Region == "US") %>%
+group_by(Province_State) %>%
+summarise(sumConfirmed = sum(Confirmed)) %>%
+ggplot(aes(x = Province_State,  y = sumConfirmed)) + 
+    geom_point() +
+    ggtitle("COVID-19 Confirmed Cases per State") +
+    facet_wrap(~Province_State, ncol=2, scales="free_y")
+```
+
+```{r, fig.height=5}
+#Exercise10 
+time_series_long_joined %>%
+filter(Country_Region %in% c("US", "Brazil", "India", "Mexico", "United Kingdom", "Italy", "France", "Spain", "Iran", "Peru")) %>%
+ggplot(aes(x = Date,  y = Deaths)) + 
+    geom_bar(stat="identity") +
+    ggtitle("COVID-19 Deaths in Top 10 Countries") +
+    facet_wrap(~Country_Region, ncol=2, scales="free_y") + 
+  theme_test()
+```
+```
 

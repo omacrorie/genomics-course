@@ -3,6 +3,7 @@ title: "Lab7"
 output: html_document
 ---
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results="asis"}
+#loading libraries
 library("BiocStyle")
 library("knitr")
 library("rmarkdown")
@@ -406,7 +407,6 @@ res <- results(dds, contrast=c("dex","trt","untrt"))
 ## -----------------------------------------------------------------------------
 #baseMean = average of normalized count values divided by size factors for all samples in the DESeqDataSet. 
 #all other columns are a specific contrast 
-#this does not make sense to me 
 mcols(res, use.names = TRUE)
 ```
 
@@ -475,7 +475,7 @@ ggplot(geneCounts, aes(x = dex, y = count, color = cell)) +
 
 ```{r}
 ## ----ggplotcountsgroup, fig.width = 4, fig.height = 3-------------------------
-#Does not need returnData = TRUE ?? 
+#Does not need returnData = TRUE ?
 ggplot(geneCounts, aes(x = dex, y = count, color = cell, group = cell)) +
   scale_y_log10() + geom_point(size = 3) + geom_line()
 ```
@@ -527,6 +527,7 @@ pheatmap(mat, annotation_col = anno)
 
 ```{r}
 ## ----sensitivityovermean, fig.width=6-----------------------------------------
+#Independent filtering
 #The ratio of small p values for genes binned by mean normalized count
 #quantile function creates bins 
 #bin genes by base mean using cut 
@@ -550,17 +551,21 @@ barplot(fractionSig, xlab = "mean normalized count",
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#Annotating and exporting results 
 library("AnnotationDbi")
 library("org.Hs.eg.db")
 ```
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#list of available key types 
 columns(org.Hs.eg.db)
 ```
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#mapIds function adds individual columns to result table. We only get back the first input. To get the gene symbol and EntrezID we call mapIds code twice. 
+#can see the external ID 
 ens.str <- substr(rownames(res), 1, 15)
 res$symbol <- mapIds(org.Hs.eg.db,
                      keys=ens.str,
@@ -582,39 +587,46 @@ head(resOrdered)
 
 ```{r}
 ## ----eval=FALSE---------------------------------------------------------------
-#  resOrderedDF <- as.data.frame(resOrdered)[1:100, ]
-#  write.csv(resOrderedDF, file = "results.csv")
+#Exporting data
+#need to convert the data frame to a format where it can be processed by read.csv 
+resOrderedDF <- as.data.frame(resOrdered)[1:100, ]
+write.csv(resOrderedDF, file = "results.csv")
 ```
 
 ```{r}
 ## ----eval=FALSE---------------------------------------------------------------
-#  library("ReportingTools")
-#  htmlRep <- HTMLReport(shortName="report", title="My report",
-#                        reportDirectory="./report")
-#  publish(resOrderedDF, htmlRep)
-#  url <- finish(htmlRep)
-#  browseURL(url)
+#generates html format 
+library("ReportingTools")
+htmlRep <- HTMLReport(shortName="report", title="My report",
+                        reportDirectory="./report")
+publish(resOrderedDF, htmlRep)
+url <- finish(htmlRep)
+browseURL(url)
 ```
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#Plotting fold changes in the genomic space 
 resGR <- lfcShrink(dds, coef="dex_trt_vs_untrt", type="apeglm", format="GRanges")
 resGR
 ```
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#add symbol to label genes on the plot
 ens.str <- substr(names(resGR), 1, 15)
 resGR$symbol <- mapIds(org.Hs.eg.db, ens.str, "SYMBOL", "ENSEMBL")
 ```
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#Used for plotting GRanges and associated metadata 
 library("Gviz")
 ```
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#sets a window of 1 million base pairs up and downstream from the gene with the smallest p value. 
 window <- resGR[topGene] + 1e6
 strand(window) <- "*"
 resGRsub <- resGR[resGR %over% window]
@@ -625,6 +637,7 @@ resGRsub$group <- ifelse(naOrDup, names(resGRsub), resGRsub$symbol)
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#Specify if the genes in the subset had a low value of padj 
 status <- factor(ifelse(resGRsub$padj < 0.05 & !is.na(resGRsub$padj),
                         "sig", "notsig"))
 
@@ -643,11 +656,14 @@ plotTracks(list(g, d, a), groupAnnotation = "group",
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#Removing hidden batch effects
 library("sva")
 ```
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#matrix of normalized counts 
+#trying to determine if there are any batch effects 
 dat  <- counts(dds, normalized = TRUE)
 idx  <- rowMeans(dat) > 1
 dat  <- dat[idx, ]
@@ -668,6 +684,7 @@ for (i in 1:2) {
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#Add the surrogate variables to columns to DESeq Dataset
 ddssva <- dds
 ddssva$SV1 <- svseq$sv[,1]
 ddssva$SV2 <- svseq$sv[,2]
@@ -676,11 +693,14 @@ design(ddssva) <- ~ SV1 + SV2 + dex
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#Using RUV with DESeq2
+#Used to find hidden batch effects 
 library("RUVSeq")
 ```
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#Run without knowing about the batches
 set <- newSeqExpressionSet(counts(dds))
 idx  <- rowSums(counts(set) > 5) >= 2
 set  <- set[idx, ]
@@ -702,6 +722,7 @@ for (i in 1:2) {
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#Add to DESeq dataset 
 ddsruv <- dds
 ddsruv$W1 <- set$W_1
 ddsruv$W2 <- set$W_2
@@ -711,6 +732,8 @@ design(ddsruv) <- ~ W1 + W2 + dex
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#Time course experiments 
+#Basic time course experiment 
 library("fission")
 data("fission")
 ddsTC <- DESeqDataSet(fission, ~ strain + minute + strain:minute)
@@ -718,6 +741,8 @@ ddsTC <- DESeqDataSet(fission, ~ strain + minute + strain:minute)
 
 ```{r}
 ## ----fissionDE----------------------------------------------------------------
+#Likelihood ratio test 
+#Remove strain specific differences over time 
 ddsTC <- DESeq(ddsTC, test="LRT", reduced = ~ strain + minute)
 resTC <- results(ddsTC)
 resTC$symbol <- mcols(ddsTC)$symbol
@@ -744,6 +769,8 @@ res30[which.min(resTC$padj),]
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#cluseter specific genes by their profiles 
+#Extract a matrix of the log2 fold change using the coef function. Maximum likelihood estimates. 
 betas <- coef(ddsTC)
 colnames(betas)
 
@@ -751,6 +778,7 @@ colnames(betas)
 
 ```{r}
 ## ----fissionheatmap-----------------------------------------------------------
+#log2 fold change plotted onto a heat map 
 topGenes <- head(order(resTC$padj),20)
 mat <- betas[topGenes, -c(1,2)]
 thr <- 3 
@@ -762,6 +790,9 @@ pheatmap(mat, breaks=seq(from=-thr, to=thr, length=101),
 
 ```{r}
 ## -----------------------------------------------------------------------------
+#Session Info
+#gives the version numbers of R and all the packages used in this session
+#good for reproducibility 
 sessionInfo()
 ```
 
